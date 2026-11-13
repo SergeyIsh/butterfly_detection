@@ -218,3 +218,23 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Downloaded images
+images/
+*.part
+
+# Model weights
+*.pt
+*.pth
+*.safetensors
+*.ckpt
+
+# macOS
+.DS_Store
+
+# Environment variables
+.env
+.env.*
