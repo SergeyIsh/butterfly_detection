@@ -1,0 +1,15 @@
+{
+  "api_token": "",
+  "deployment_key": "butterfly-bbox-2026-v2",
+  "public_name": "Найдите всех бабочек на фотографии",
+  "public_description": "Выделите прямоугольными рамками всех взрослых бабочек на фотографии.",
+  "will_expire": "2026-12-01T00:00:00Z",
+  "assignment_max_duration_seconds": 1200,
+  "auto_accept_period_day": 7,
+  "admission_score": 90,
+  "training_admission_score": 90,
+  "training": {"tasks_per_assignment": 5, "reward_per_assignment": 3, "overlap": 10},
+  "exam": {"tasks_per_assignment": 10, "reward_per_assignment": 6, "overlap": 10},
+  "pilot": {"tasks_per_assignment": 5, "reward_per_assignment": 3, "overlap": 2},
+  "main": {"tasks_per_assignment": 5, "reward_per_assignment": 3, "overlap": 1}
+}

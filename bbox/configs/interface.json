@@ -1,0 +1,226 @@
+{
+  "view": {
+    "type": "view.list",
+    "items": [
+      {
+        "type": "view.text",
+        "content": "Обведите каждую взрослую дневную или ночную бабочку отдельной плотной прямоугольной рамкой. Разделять бабочек на эти группы не нужно. Включайте все видимые части: крылья, тело, усики и лапки. Скрытые части не достраивайте."
+      },
+      {
+        "type": "view.text",
+        "label": "Фото",
+        "content": {
+          "type": "data.input",
+          "path": "photo_id"
+        }
+      },
+      {
+        "type": "field.image-annotation",
+        "image": {
+          "type": "data.input",
+          "path": "image_url"
+        },
+        "data": {
+          "type": "data.output",
+          "path": "boxes",
+          "default": []
+        },
+        "fullHeight": true,
+        "shapes": {
+          "rectangle": true
+        },
+        "hint": "Осмотрите всё фото с увеличением. Отметьте два противоположных угла. Если появилась кнопка «Создать прямоугольник», подтвердите создание. Для удаления рамки выберите её; для очистки используйте корзину редактора."
+      },
+      {
+        "type": "field.radio-group",
+        "label": "Результат осмотра",
+        "data": {
+          "type": "data.output",
+          "path": "status"
+        },
+        "options": [
+          {
+            "value": "objects",
+            "label": "Есть бабочки — все уверенно распознанные объекты обведены"
+          },
+          {
+            "value": "empty",
+            "label": "Бабочек нет — фото загрузилось и полностью осмотрено"
+          },
+          {
+            "value": "load_error",
+            "label": "Фото не загрузилось или не отображается"
+          },
+          {
+            "value": "uncertain",
+            "label": "Есть сомнение — нужна проверка"
+          }
+        ],
+        "validation": {
+          "type": "condition.required",
+          "hint": "Выберите результат осмотра."
+        },
+        "hint": "Для «Бабочек нет» и «Фото не загрузилось» удалите все рамки. При сомнении оставьте только рамки уверенно распознанных бабочек и объясните сомнение."
+      },
+      {
+        "type": "field.textarea",
+        "label": "Комментарий",
+        "data": {
+          "type": "data.output",
+          "path": "comment",
+          "default": ""
+        },
+        "rows": 2,
+        "hint": "Обязателен, если фото не загрузилось или есть сомнение. Укажите проблему или расположение спорного объекта."
+      }
+    ],
+    "validation": {
+      "type": "condition.schema",
+      "data": {
+        "status": {
+          "type": "data.output",
+          "path": "status"
+        },
+        "boxes": {
+          "type": "data.output",
+          "path": "boxes"
+        },
+        "comment": {
+          "type": "data.output",
+          "path": "comment"
+        }
+      },
+      "hint": "Проверьте ответ: «Есть бабочки» требует хотя бы одну рамку; «Бабочек нет» и «Фото не загрузилось» — ни одной. Ошибка загрузки и сомнение требуют содержательного комментария.",
+      "schema": {
+        "type": "object",
+        "required": [
+          "status",
+          "boxes"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "objects",
+              "empty",
+              "load_error",
+              "uncertain"
+            ]
+          },
+          "comment": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "boxes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "shape",
+                "left",
+                "top",
+                "width",
+                "height"
+              ],
+              "properties": {
+                "shape": {
+                  "const": "rectangle"
+                },
+                "left": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "top": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "width": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 1
+                },
+                "height": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 1
+                }
+              }
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "objects"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "boxes": {
+                  "minItems": 1
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "empty",
+                    "load_error"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "boxes": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "load_error",
+                    "uncertain"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "comment"
+              ],
+              "properties": {
+                "comment": {
+                  "type": "string",
+                  "pattern": "\\S"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "plugins": [
+    {
+      "type": "plugin.toloka",
+      "layout": {
+        "kind": "pager"
+      }
+    }
+  ]
+}
