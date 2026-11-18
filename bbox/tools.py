@@ -244,6 +244,8 @@ def read_answers(path, rows):
             try:
                 if None in row or any(value is None for value in row.values()):
                     raise ValueError('malformed TSV row')
+                if not any(value.strip() for value in row.values()):
+                    continue
                 answer = {key: row[column] for key, column in mapping.items()}
                 identifier = photo_id(answer['photo_id'])
                 if identifier not in rows:
