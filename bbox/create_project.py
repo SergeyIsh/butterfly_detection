@@ -52,16 +52,23 @@ def validate_settings(settings, now):
 
     for role in STAGES:
         stage = settings[role]
-        if (
-            not isinstance(stage, dict)
-            or set(stage) != {'tasks_per_assignment', 'reward_per_assignment', 'overlap'}
-        ):
+        stage_keys = {'tasks_per_assignment', 'reward_per_assignment', 'overlap'}
+        if isinstance(stage, dict) and role == 'main' and 'fast_answers' in stage:
+            stage_keys.add('fast_answers')
+        if not isinstance(stage, dict) or set(stage) != stage_keys:
             raise ValueError(f'{role}: set tasks_per_assignment, reward_per_assignment and overlap')
         check_integer(stage['tasks_per_assignment'], f'{role}.tasks_per_assignment', 1, 500)
         check_integer(stage['overlap'], f'{role}.overlap')
         reward = stage['reward_per_assignment']
         if type(reward) not in (int, float) or not math.isfinite(reward) or reward < 0.5:
             raise ValueError(f'{role}.reward_per_assignment: minimum 0.5 RUB per assignment')
+
+    fast_answers = settings['main'].get('fast_answers')
+    if fast_answers is not None:
+        if not isinstance(fast_answers, dict) or set(fast_answers) != {'min_seconds', 'count', 'ban_days'}:
+            raise ValueError('main.fast_answers: set min_seconds, count and ban_days, or use null')
+        for name in ('min_seconds', 'count', 'ban_days'):
+            check_integer(fast_answers[name], f'main.fast_answers.{name}')
 
 
 def prepare_template(interface, lock):
@@ -240,6 +247,29 @@ def build_plan(settings, interface, lock, instructions, examples_base_url=None, 
             },
             'filter': {'and': [{'or': [condition]} for condition in filters]},
         }
+        fast_answers = pool_config.get('fast_answers')
+        if role == 'main' and fast_answers is not None:
+            pool['quality_control'] = {'configs': [{
+                'collector_config': {
+                    'type': 'ASSIGNMENT_SUBMIT_TIME',
+                    'parameters': {'fast_submit_threshold_seconds': fast_answers['min_seconds']}
+                },
+                'rules': [{
+                    'conditions': [{
+                        'key': 'fast_submitted_count',
+                        'operator': 'GTE',
+                        'value': fast_answers['count']
+                    }],
+                    'action': {
+                        'type': 'RESTRICTION_V2',
+                        'parameters': {
+                            'scope': 'POOL',
+                            'duration_unit': 'DAYS',
+                            'duration': fast_answers['ban_days']
+                        }
+                    }
+                }]
+            }]}
         add(role, '/pools', pool)
     return steps
 

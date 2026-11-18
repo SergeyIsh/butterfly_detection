@@ -11,5 +11,10 @@
   "training": {"tasks_per_assignment": 5, "reward_per_assignment": 3, "overlap": 10},
   "exam": {"tasks_per_assignment": 10, "reward_per_assignment": 6, "overlap": 10},
   "pilot": {"tasks_per_assignment": 5, "reward_per_assignment": 3, "overlap": 2},
-  "main": {"tasks_per_assignment": 5, "reward_per_assignment": 3, "overlap": 1}
+    "main": {
+        "tasks_per_assignment": 5,
+        "reward_per_assignment": 3,
+        "overlap": 1,
+        "fast_answers": {"min_seconds": 20, "count": 2, "ban_days": 1}
+    }
 }
